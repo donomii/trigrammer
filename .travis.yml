@@ -1,7 +1,5 @@
 language: go
-
-go:
 before_install:
-  - go get
+  - go get -u -v
 script:
   - go build .
