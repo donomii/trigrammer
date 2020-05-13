@@ -1,0 +1,7 @@
+language: go
+
+go:
+before_install:
+  - go get
+script:
+  - go build .
