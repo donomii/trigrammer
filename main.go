@@ -22,7 +22,7 @@ type DbDetails struct {
 
 type dbList []DbDetails
 
-//Given a number (as a string type), return a string, as stored in the database
+//Given a string, return an identifying number as stored in the database
 func FetchString_str(db DbDetails, sym string) string {
 	stmt, err := db.db.Prepare("SELECT s FROM strings WHERE id = ?")
 	if err != nil {
