@@ -12,7 +12,7 @@ import (
 	_ "database/sql"
 
 	"github.com/chzyer/readline"
-	"github.com/donomii/trigrammr"
+	"github.com/donomii/trigrammer"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -154,6 +154,9 @@ func main() {
 			default:
 				println("invalid mode:", line[5:])
 			}
+		case strings.HasPrefix(line, "q "):
+
+			fmt.Printf("%+v\n", trigrammr.QueryQuads(databases, args))
 		case strings.HasPrefix(line, "summary"):
 			fmt.Println(trigrammr.TopTenA(databases, "A"))
 		case strings.HasPrefix(line, "summarise"):
