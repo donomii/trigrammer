@@ -1,40 +1,49 @@
 package main
 
 import (
-    "io/ioutil"
-    "github.com/donomii/trigrammr"
 	"fmt"
+
+	"github.com/donomii/trigrammr"
+
 	//"io"
 	//"log"
+	"bufio"
 	"os"
-    "bufio"
-    "strings"
+	"strings"
 )
 
 func insertTrigrams(db trigrammr.DbDetails, record []string) {
-    if trigrammr.Debug {
-        fmt.Println("Trigram: ", record)
-    }
-    trigrammr.InsertTrigramCached(db, record)
+	if trigrammr.Debug {
+		fmt.Println("Trigram: ", record)
+	}
+	trigrammr.InsertTrigramCached(db, record)
 }
 
-func makeWords (line string) []string {
-    args := strings.Split(line, " ")
-    return args
+func makeWords(line string) []string {
+	line = strings.ReplaceAll(line, ".", " ")
+	line = strings.ReplaceAll(line, ",", " ")
+	line = strings.ReplaceAll(line, "\"", " ")
+	args := strings.Split(line, " ")
+	return args
 }
 
 func main() {
-    db, _ := trigrammr.OpenDB(os.Args[1])
+	db, _ := trigrammr.OpenDB(os.Args[1])
 	r := bufio.NewReader(os.Stdin)
-    str, _ := ioutil.ReadAll(r)
-    words := trigrammr.TrimWords(makeWords(string(str)))
+	for {
+		str, err := r.ReadString([]byte("\n")[0])
+		if err != nil {
+			panic(err)
+		}
+		words := trigrammr.TrimWords(makeWords(string(str)))
 
-	for i:=2; i<len(words); i++ {
-		record := []string{words[i-2], words[i-1], words[i]}
-        //fmt.Println(record)
-		insertTrigrams(db, record)
-        if trigrammr.Debug {
-            fmt.Println(record)
-        }
+		for i := 2; i < len(words); i++ {
+			record := []string{words[i-2], words[i-1], words[i]}
+			//fmt.Println(record)
+			insertTrigrams(db, record)
+			if trigrammr.Debug {
+				fmt.Println(record)
+			}
+		}
 	}
 }
