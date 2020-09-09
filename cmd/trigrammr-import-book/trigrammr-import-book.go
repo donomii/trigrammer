@@ -20,9 +20,9 @@ func insertTrigrams(db trigrammr.DbDetails, record []string) {
 }
 
 func makeWords(line string) []string {
-	line = strings.ReplaceAll(line, ".", " ")
-	line = strings.ReplaceAll(line, ",", " ")
-	line = strings.ReplaceAll(line, "\"", " ")
+	line = strings.Replace(line, ".", " ", -1)
+	line = strings.Replace(line, ",", " ", -1)
+	line = strings.Replace(line, "\"", " ", -1)
 	args := strings.Split(line, " ")
 	return args
 }
