@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 
+	"io/ioutil"
 	"github.com/donomii/trigrammr"
 
 	//"io"
@@ -28,6 +28,9 @@ func insertQuadgrams(db trigrammr.DbDetails, record []string) {
 }
 
 func makeWords(line string) []string {
+	line = strings.Replace(line, ".", " ", -1)
+	line = strings.Replace(line, ",", " ", -1)
+	line = strings.Replace(line, "\"", " ", -1)
 	args := strings.Split(line, " ")
 	return args
 }
