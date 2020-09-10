@@ -58,6 +58,100 @@ func FetchString(db DbDetails, sym int) string {
 	return name
 }
 
+func QueryQuads(dbs []DbDetails, strs []string) [][]string {
+	out := [][]string{}
+	for _, db := range dbs {
+		out = append(out, QueryQuad(db, strs)...)
+	}
+	return out
+}
+
+func QueryQuad(db DbDetails, strs []string) [][]string {
+	if Debug {
+		log.Println("Looking up ", strs)
+	}
+	var out = [][]string{}
+	syms := []int{}
+	for _, v := range strs {
+		var sym int = -1
+		if v == "*" || v == "?" {
+			sym = -1
+		} else {
+			sym = FetchSymbol(db, v)
+			if sym == -1 {
+				log.Println("%v not found in db", v)
+				return out
+			}
+		}
+		syms = append(syms, sym)
+	}
+	results_sym := QueryQuad_syms(db, syms)
+	for _, row := range results_sym {
+		new_row := []string{}
+		for _, c := range row {
+			new_row = append(new_row, FetchString(db, c))
+		}
+		out = append(out, new_row)
+	}
+	return out
+
+}
+
+//Query the quadgram table, return the all ngrams as symbols.
+func QueryQuad_syms(db DbDetails, syms []int) [][]int {
+	if Debug {
+		log.Println("Looking up ", syms)
+	}
+	var wherebits = []string{}
+	column := map[int]string{
+		0: "a",
+		1: "b",
+		2: "c",
+		3: "d",
+		4: "e",
+	}
+	for i, v := range syms {
+		if v > -1 {
+			wherebits = append(wherebits, column[i]+" = ?")
+		}
+	}
+	where := strings.Join(wherebits, " AND ")
+	var out = [][]int{}
+	fullQuery := "SELECT DISTINCT * FROM quadgram_symbols WHERE " + where
+	log.Println("Full query string: ", "SELECT DISTINCT * FROM quadgram_symbols WHERE "+where)
+	stmt, err := db.db.Prepare(fullQuery)
+	if err != nil {
+		log.Println("QueryQuad failed: ", err)
+		return nil
+	}
+	defer stmt.Close()
+	qbits := []interface{}{}
+	for _, v := range syms {
+		if v > -1 {
+			qbits = append(qbits, v)
+		}
+	}
+	log.Printf("query data: %+v\n", qbits)
+	rows, err := stmt.Query(qbits...)
+	if err != nil {
+		log.Println("QueryQuad failed: ", err)
+		return nil
+	}
+	for rows.Next() {
+		var a, b, c, d int
+
+		err = rows.Scan(&a, &b, &c, &d)
+
+		if err != nil {
+			log.Println("QueryQuad failed: ", err)
+		}
+
+		out = append(out, []int{a, b, c, d})
+	}
+	rows.Close()
+	return out
+}
+
 //Query the quadgram table, return the fourth gram, given the first 3.  This will be unique (or non-existent)
 func FetchCForABC(db DbDetails, strs []string) []string {
 	if Debug {
